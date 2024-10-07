@@ -50,12 +50,35 @@ app.post("/signin", async function(req, res) {
     }
 })
 
-app.post("/todo", auth, function(req, res) {
+app.post("/todo", auth, async function(req, res) {
+    const {title, done} = req.body;
+
+    const userId = req.userId;
+
+    try {
+        await TodoModel.create({userId, title, done});
+
+        res.status(201).json({message: "Todo created!"});
+    } catch (error) {
+        res.status(500).json({message: "Error creating todo"});
+    }
     
 })
 
-app.get("/todos", auth, function(req, res) {
-    
+app.get("/todos", auth, async function(req, res) {
+    const userId = req.userId;
+
+    try {
+        const todos = await TodoModel.find({userId});
+
+        if(todos) {
+            res.status(200).json(todos);
+        } else {
+            res.json({message: "No todos found"});
+        }
+    } catch (error) {
+        res.status(500).json({message: "Error fetching todos"});
+    }
 })
 
 function auth(req, res, next) {
@@ -73,4 +96,4 @@ function auth(req, res, next) {
     }
 }
 
-app.listen(3000);
+app.listen(3000)
